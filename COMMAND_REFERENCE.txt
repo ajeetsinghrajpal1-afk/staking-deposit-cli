@@ -1,0 +1,191 @@
+┌────────────────────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  VALIDATOR 8499 - WITHDRAWAL ADDRESS UPDATE - COMMAND REFERENCE           │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CONFIGURATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Validator Index:    8499
+  
+  Old Credentials:    0x00101ca78a5ea9aad05eeffebadc2734754badb9620a4adb366e6013da054b51
+                      (BLS withdrawal credentials - prefix 0x00)
+  
+  New Address:        0x06EE840642a33367ee59fCA237F270d5119d1356
+                      (Execution layer address for withdrawals)
+  
+  Network:            mainnet
+  
+  Start Index:        0
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 1: INTERACTIVE SHELL SCRIPT (RECOMMENDED)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ./run_withdrawal_address_update.sh
+
+  ✓ Easiest method
+  ✓ Color-coded output
+  ✓ Asks for confirmation
+  ✓ Shows next steps
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 2: PYTHON HELPER SCRIPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  python3 update_withdrawal_address_example.py
+
+  Or to see the manual command:
+  
+  python3 update_withdrawal_address_example.py --help
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 3: MANUAL COMMAND (USING DEPOSIT.SH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ./deposit.sh \
+    --language english \
+    generate-bls-to-execution-change \
+    --chain mainnet \
+    --validator_start_index 0 \
+    --validator_indices 8499 \
+    --bls_withdrawal_credentials_list 0x00101ca78a5ea9aad05eeffebadc2734754badb9620a4adb366e6013da054b51 \
+    --execution_address 0x06EE840642a33367ee59fCA237F270d5119d1356
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 4: MANUAL COMMAND (USING PYTHON MODULE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  python3 -m staking_deposit.deposit \
+    --language english \
+    generate-bls-to-execution-change \
+    --chain mainnet \
+    --validator_start_index 0 \
+    --validator_indices 8499 \
+    --bls_withdrawal_credentials_list 0x00101ca78a5ea9aad05eeffebadc2734754badb9620a4adb366e6013da054b51 \
+    --execution_address 0x06EE840642a33367ee59fCA237F270d5119d1356
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PREREQUISITES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Install dependencies:
+     pip3 install -r requirements.txt
+     python3 setup.py install
+
+  2. Have your 24-word mnemonic ready
+     (You'll be prompted to enter it securely)
+
+  3. Make scripts executable:
+     chmod +x deposit.sh
+     chmod +x run_withdrawal_address_update.sh
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ OUTPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Generated file location:
+  
+  bls_to_execution_changes/bls_to_execution_change-<timestamp>.json
+  
+  This file contains the signed BLS-to-execution change message.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SUBMISSION METHODS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Option 1: Via Beacon Node (Lighthouse)
+  
+  lighthouse account validator bls-to-execution-change \
+    --file bls_to_execution_changes/bls_to_execution_change-*.json
+
+  Option 2: Via Beacon Node (Prysm)
+  
+  prysm validator bls-to-execution-change \
+    --path bls_to_execution_changes/bls_to_execution_change-*.json
+
+  Option 3: Via Ethereum Launchpad
+  
+  1. Visit https://launchpad.ethereum.org/
+  2. Navigate to withdrawal credentials section
+  3. Upload your JSON file
+
+  Option 4: Via Block Explorer
+  
+  Visit https://beaconcha.in/validator/8499
+  Look for "Update Withdrawal Credentials" option
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Monitor your validator:
+  https://beaconcha.in/validator/8499
+
+  After successful processing, withdrawal credentials will change:
+  
+  From: 0x00101ca78a5ea9aad05eeffebadc2734754badb9620a4adb366e6013da054b51
+  To:   0x0106ee840642a33367ee59fca237f270d5119d1356000000000000000000000000
+  
+  Note: The 0x01 prefix indicates execution layer withdrawal
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Error: "ModuleNotFoundError: No module named 'Crypto'"
+  Fix:   pip3 install pycryptodome
+
+  Error: "Mnemonic does not match withdrawal credentials"
+  Fix:   - Verify you're using the correct mnemonic
+         - Check validator_start_index is correct (usually 0)
+         - Confirm BLS withdrawal credentials match
+
+  Error: "Permission denied"
+  Fix:   chmod +x run_withdrawal_address_update.sh
+         chmod +x deposit.sh
+
+  For detailed troubleshooting, see:
+  WITHDRAWAL_ADDRESS_UPDATE_GUIDE.md
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ⚠️  SECURITY WARNINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  🔒 NEVER share your mnemonic with anyone
+  🔒 Use an OFFLINE and SECURE device
+  🔒 VERIFY all parameters multiple times
+  🔒 BACKUP the generated file securely
+  🔒 This operation is IRREVERSIBLE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DOCUMENTATION FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  README_HELPER_SCRIPTS.md          Quick intro to helper scripts
+  QUICKSTART.md                      Quick reference for all methods
+  WITHDRAWAL_ADDRESS_UPDATE_GUIDE.md Complete guide with details
+  SUMMARY.md                         Overview and recommendations
+  COMMAND_REFERENCE.txt              This file
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Need help? See WITHDRAWAL_ADDRESS_UPDATE_GUIDE.md for detailed instructions
+
+  Good luck! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
