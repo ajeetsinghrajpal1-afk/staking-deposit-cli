@@ -182,11 +182,20 @@ def generate_bls_to_execution_change(
 
     # Check if the given old bls_withdrawal_credentials is as same as the mnemonic generated
     for i, credential in enumerate(credentials.credentials):
-        # Require explicit mnemonic and mnemonic password input
+        # Read mnemonic and mnemonic password from environment variables if set, otherwise prompt
+        import os
+        env_mnemonic = os.environ.get('MNEMONIC')
+        env_mnemonic_password = os.environ.get('MNEMONIC_PASSWORD')
         if not mnemonic:
-            mnemonic = click.prompt('Enter your mnemonic', hide_input=False, show_default=False, type=str)
+            if env_mnemonic:
+                mnemonic = env_mnemonic
+            else:
+                mnemonic = click.prompt('Enter your mnemonic', hide_input=False, show_default=False, type=str)
         if not mnemonic_password:
-            mnemonic_password = click.prompt('Enter your mnemonic password (leave blank if none)', hide_input=True, show_default=False, type=str, default='')
+            if env_mnemonic_password is not None:
+                mnemonic_password = env_mnemonic_password
+            else:
+                mnemonic_password = click.prompt('Enter your mnemonic password (leave blank if none)', hide_input=True, show_default=False, type=str, default='')
 
         # Generate folder
         bls_to_execution_changes_folder = os.path.join(
