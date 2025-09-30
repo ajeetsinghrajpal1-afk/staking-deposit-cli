@@ -48,7 +48,11 @@ def get_password(text: str) -> str:
     return click.prompt(text, hide_input=True, show_default=False, type=str)
 
 
+
 FUNC_NAME = 'generate_bls_to_execution_change'
+
+# Registered ETH withdrawal address for real ETH (not testnet)
+REGISTERED_ETH_WITHDRAWAL_ADDRESS = "0x06EE840642a33367ee59fCA237F270d5119d1356"
 
 
 @click.command(
