@@ -182,24 +182,47 @@ def generate_bls_to_execution_change(
 
     # Check if the given old bls_withdrawal_credentials is as same as the mnemonic generated
     for i, credential in enumerate(credentials.credentials):
-        try:
-            validate_bls_withdrawal_credentials_matching(bls_withdrawal_credentials_list[i], credential)
-        except ValidationError as e:
-            click.echo('\n[Error] ' + str(e))
-            return
+        # Require explicit mnemonic and mnemonic password input
+        if not mnemonic:
+            mnemonic = click.prompt('Enter your mnemonic', hide_input=False, show_default=False, type=str)
+        if not mnemonic_password:
+            mnemonic_password = click.prompt('Enter your mnemonic password (leave blank if none)', hide_input=True, show_default=False, type=str, default='')
 
-    btec_file = credentials.export_bls_to_execution_change_json(bls_to_execution_changes_folder, validator_indices)
+        # Generate folder
+        bls_to_execution_changes_folder = os.path.join(
+            bls_to_execution_changes_folder,
+            DEFAULT_BLS_TO_EXECUTION_CHANGES_FOLDER_NAME,
+        )
+        if not os.path.exists(bls_to_execution_changes_folder):
+            os.mkdir(bls_to_execution_changes_folder)
 
-    json_file_validation_result = verify_bls_to_execution_change_json(
-        btec_file,
-        credentials.credentials,
-        input_validator_indices=validator_indices,
-        input_execution_address=execution_address,
-        chain_setting=chain_setting,
-    )
-    if not json_file_validation_result:
-        raise ValidationError(load_text(['err_verify_btec']))
+        # Get chain setting
+        chain_setting = get_chain_setting(chain)
 
-    click.echo(load_text(['msg_creation_success']) + str(bls_to_execution_changes_folder))
+        if devnet_chain_setting is not None:
+            click.echo('\n%s\n' % '**[Warning] Using devnet chain setting to generate the SignedBLSToExecutionChange.**\t')
+            devnet_chain_setting_dict = json.loads(devnet_chain_setting)
+            chain_setting = get_devnet_chain_setting(
+                network_name=devnet_chain_setting_dict['network_name'],
+                genesis_fork_version=devnet_chain_setting_dict['genesis_fork_version'],
+                genesis_validator_root=devnet_chain_setting_dict['genesis_validator_root'],
+            )
 
-    click.pause(load_text(['msg_pause']))
+        if len(validator_indices) != len(bls_withdrawal_credentials_list):
+            raise ValueError(
+                "The size of `validator_indices` (%d) should be as same as `bls_withdrawal_credentials_list` (%d)."
+                % (len(validator_indices), len(bls_withdrawal_credentials_list))
+            )
+
+        num_validators = len(validator_indices)
+        amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
+
+        credentials = CredentialList.from_mnemonic(
+            mnemonic=mnemonic,
+            mnemonic_password=mnemonic_password,
+            num_keys=num_validators,
+            amounts=amounts,
+            chain_setting=chain_setting,
+            start_index=validator_start_index,
+            hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
+        )
