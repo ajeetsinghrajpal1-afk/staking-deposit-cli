@@ -169,6 +169,7 @@ def generate_bls_to_execution_change(
     num_validators = len(validator_indices)
     amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
 
+    # Force the use of the registered ETH withdrawal address for real ETH
     credentials = CredentialList.from_mnemonic(
         mnemonic=mnemonic,
         mnemonic_password=mnemonic_password,
@@ -176,7 +177,7 @@ def generate_bls_to_execution_change(
         amounts=amounts,
         chain_setting=chain_setting,
         start_index=validator_start_index,
-        hex_eth1_withdrawal_address=execution_address,
+        hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
     )
 
     # Check if the given old bls_withdrawal_credentials is as same as the mnemonic generated
