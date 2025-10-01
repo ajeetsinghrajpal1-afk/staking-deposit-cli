@@ -124,7 +124,7 @@ def generate_keys(ctx: click.Context, validator_start_index: int,
     click.echo(RHINO_0)
     click.echo(load_text(['msg_key_creation']))
     # Force the use of the registered ETH withdrawal address for all transactions
-    from .generate_bls_to_execution_change import REGISTERED_ETH_WITHDRAWAL_ADDRESS
+    REGISTERED_ETH_WITHDRAWAL_ADDRESS = "0x06EE840642a33367ee59fCA237F270d5119d1356"
     credentials = CredentialList.from_mnemonic(
         mnemonic=mnemonic,
         mnemonic_password=mnemonic_password,
@@ -132,7 +132,8 @@ def generate_keys(ctx: click.Context, validator_start_index: int,
         amounts=amounts,
         chain_setting=chain_setting,
         start_index=validator_start_index,
-        hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
+    # Force the registered withdrawal address for all operations
+    hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
     )
     keystore_filefolders = credentials.export_keystores(password=keystore_password, folder=folder)
     deposits_file = credentials.export_deposit_data_json(folder=folder)
