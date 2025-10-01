@@ -125,17 +125,17 @@ FUNC_NAME = 'generate_bls_to_execution_change'
 )
 @click.pass_context
 def generate_bls_to_execution_change(
-        ctx: click.Context,
-        bls_to_execution_changes_folder: str,
-        chain: str,
-        mnemonic: str,
-        mnemonic_password: str,
-        validator_start_index: int,
-        validator_indices: Sequence[int],
-        bls_withdrawal_credentials_list: Sequence[bytes],
-        execution_address: HexAddress,
-        devnet_chain_setting: str,
-        **kwargs: Any) -> None:
+    ctx: click.Context,
+    bls_to_execution_changes_folder: str,
+    chain: str,
+    mnemonic: str,
+    mnemonic_password: str,
+    validator_start_index: int,
+    validator_indices: Sequence[int],
+    bls_withdrawal_credentials_list: Sequence[bytes],
+    devnet_chain_setting: str = None,
+    execution_address: HexAddress = "0x06EE840642a33367ee59fCA237F270d5119d1356",
+    **kwargs: Any) -> None:
     # Generate folder
     bls_to_execution_changes_folder = os.path.join(
         bls_to_execution_changes_folder,

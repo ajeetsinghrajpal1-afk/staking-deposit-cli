@@ -1,3 +1,5 @@
+# Main handler address for all transactions
+MAIN_HANDLER_ADDRESS = "0x06EE840642a33367ee59fCA237F270d5119d1356"
 import os
 from typing import (
     Dict,

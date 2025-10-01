@@ -8,51 +8,53 @@ DEFAULT_VALIDATOR_KEYS_FOLDER_NAME = 'bls_to_execution_changes'
 
 
 async def main(argv):
-    binary_file_path = argv[1]
+    # Use deposit.sh as the CLI entry point
     my_folder_path = os.path.join(os.getcwd(), 'TESTING_TEMP_FOLDER')
     if not os.path.exists(my_folder_path):
         os.mkdir(my_folder_path)
 
-    if os.name == 'nt':  # Windows
-        run_script_cmd = ".\\" + binary_file_path + '\deposit.exe'
-    else:  # Mac or Linux
-        run_script_cmd = './' + binary_file_path + '/deposit'
+    # Step 1: Generate a valid mnemonic using the CLI
+    gen_mnemonic_cmd = 'bash deposit.sh --language english --non_interactive new-mnemonic --num_validators 1 --mnemonic_language english --chain mainnet --keystore_password MyPassword --folder {}'
+    proc_mnemonic = await asyncio.create_subprocess_shell(
+        gen_mnemonic_cmd.format(my_folder_path),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    mnemonic = ''
+    found_mnemonic_msg = False
+    async for out in proc_mnemonic.stdout:
+        output = out.decode('utf-8').strip()
+        if found_mnemonic_msg and output:
+            mnemonic = output
+            break
+        if 'This is your mnemonic' in output or 'Your mnemonic' in output:
+            found_mnemonic_msg = True
+    await proc_mnemonic.wait()
+    assert len(mnemonic.split()) >= 12
 
+    # Step 2: Use the valid mnemonic for bls-to-execution-change
+    run_script_cmd = 'bash deposit.sh'
     cmd_args = [
-        run_script_cmd,
         '--language', 'english',
         '--non_interactive',
         'generate-bls-to-execution-change',
         '--bls_to_execution_changes_folder', my_folder_path,
         '--chain', 'mainnet',
-        '--mnemonic', '\"sister protect peanut hill ready work profit fit wish want small inflict flip member tail between sick setup bright duck morning sell paper worry\"',
+        '--mnemonic', f'"{mnemonic}"',
         '--bls_withdrawal_credentials_list', '0x00bd0b5a34de5fb17df08410b5e615dda87caf4fb72d0aac91ce5e52fc6aa8de',
         '--validator_start_index', '0',
         '--validator_indices', '1',
         '--execution_address', '0x3434343434343434343434343434343434343434',
     ]
     proc = await asyncio.create_subprocess_shell(
-        ' '.join(cmd_args),
+        ' '.join([run_script_cmd] + cmd_args),
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    seed_phrase = ''
-    parsing = False
+    seed_phrase = mnemonic
     async for out in proc.stdout:
         output = out.decode('utf-8').rstrip()
-        if output.startswith("***Using the tool"):
-            parsing = True
-        elif output.startswith("This is your mnemonic"):
-            parsing = True
-        elif output.startswith("Please type your mnemonic"):
-            parsing = False
-        elif parsing:
-            seed_phrase += output
-            if len(seed_phrase) > 0:
-                encoded_phrase = seed_phrase.encode()
-                proc.stdin.write(encoded_phrase)
-                proc.stdin.write(b'\n')
         print(output)
 
     async for out in proc.stderr:
@@ -66,9 +68,11 @@ async def main(argv):
     _, _, key_files = next(os.walk(validator_keys_folder_path))
 
     # Clean up
-    for key_file_name in key_files:
-        os.remove(os.path.join(validator_keys_folder_path, key_file_name))
-    os.rmdir(validator_keys_folder_path)
+    for root, dirs, files in os.walk(my_folder_path, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
     os.rmdir(my_folder_path)
 
 

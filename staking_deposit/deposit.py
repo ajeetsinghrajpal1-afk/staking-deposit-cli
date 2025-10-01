@@ -53,8 +53,16 @@ def cli(ctx: click.Context, language: str, non_interactive: bool) -> None:
 
 
 cli.add_command(existing_mnemonic)
-cli.add_command(new_mnemonic)
 cli.add_command(generate_bls_to_execution_change)
+# Patch: propagate non_interactive to new_mnemonic
+@cli.command('new-mnemonic')
+@click.pass_context
+def new_mnemonic_cmd(ctx, **kwargs):
+    # Pass non_interactive from parent CLI
+    from staking_deposit.cli.new_mnemonic import new_mnemonic
+    parent_non_interactive = ctx.parent.params.get('non_interactive', False)
+    ctx.params['non_interactive'] = parent_non_interactive
+    ctx.forward(new_mnemonic)
 
 
 if __name__ == '__main__':
