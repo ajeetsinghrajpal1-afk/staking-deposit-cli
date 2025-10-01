@@ -182,56 +182,45 @@ def generate_bls_to_execution_change(
 
     # Check if the given old bls_withdrawal_credentials is as same as the mnemonic generated
     for i, credential in enumerate(credentials.credentials):
-        # Read mnemonic and mnemonic password from environment variables if set, otherwise prompt
-        import os
-        env_mnemonic = os.environ.get('MNEMONIC')
-        env_mnemonic_password = os.environ.get('MNEMONIC_PASSWORD')
-        if not mnemonic:
-            if env_mnemonic:
-                mnemonic = env_mnemonic
-            else:
-                mnemonic = click.prompt('Enter your mnemonic', hide_input=False, show_default=False, type=str)
-        if not mnemonic_password:
-            if env_mnemonic_password is not None:
-                mnemonic_password = env_mnemonic_password
-            else:
-                mnemonic_password = click.prompt('Enter your mnemonic password (leave blank if none)', hide_input=True, show_default=False, type=str, default='')
+        try:
+            validate_bls_withdrawal_credentials_matching(bls_withdrawal_credentials_list[i], credential)
+        except ValidationError as e:
+            click.echo('\n[Error] ' + str(e))
+            return
 
-        # Generate folder
-        bls_to_execution_changes_folder = os.path.join(
-            bls_to_execution_changes_folder,
-            DEFAULT_BLS_TO_EXECUTION_CHANGES_FOLDER_NAME,
-        )
-        if not os.path.exists(bls_to_execution_changes_folder):
-            os.mkdir(bls_to_execution_changes_folder)
+    btec_file = credentials.export_bls_to_execution_change_json(bls_to_execution_changes_folder, validator_indices)
 
-        # Get chain setting
-        chain_setting = get_chain_setting(chain)
+    json_file_validation_result = verify_bls_to_execution_change_json(
+        btec_file,
+        credentials.credentials,
+        input_validator_indices=validator_indices,
+        input_execution_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
+        chain_setting=chain_setting,
+    )
+    if not json_file_validation_result:
+        raise ValidationError(load_text(['err_verify_btec']))
 
-        if devnet_chain_setting is not None:
-            click.echo('\n%s\n' % '**[Warning] Using devnet chain setting to generate the SignedBLSToExecutionChange.**\t')
-            devnet_chain_setting_dict = json.loads(devnet_chain_setting)
-            chain_setting = get_devnet_chain_setting(
-                network_name=devnet_chain_setting_dict['network_name'],
-                genesis_fork_version=devnet_chain_setting_dict['genesis_fork_version'],
-                genesis_validator_root=devnet_chain_setting_dict['genesis_validator_root'],
-            )
+    click.echo(load_text(['msg_creation_success']) + str(bls_to_execution_changes_folder))
 
-        if len(validator_indices) != len(bls_withdrawal_credentials_list):
-            raise ValueError(
-                "The size of `validator_indices` (%d) should be as same as `bls_withdrawal_credentials_list` (%d)."
-                % (len(validator_indices), len(bls_withdrawal_credentials_list))
-            )
+    click.pause(load_text(['msg_pause']))
 
-        num_validators = len(validator_indices)
-        amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
 
-        credentials = CredentialList.from_mnemonic(
-            mnemonic=mnemonic,
-            mnemonic_password=mnemonic_password,
-            num_keys=num_validators,
-            amounts=amounts,
-            chain_setting=chain_setting,
-            start_index=validator_start_index,
-            hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
-        )
+if __name__ == '__main__':
+    # This allows running the module directly with python3 -m staking_deposit.cli.generate_bls_to_execution_change
+    import sys
+    from staking_deposit.deposit import check_python_version
+    from staking_deposit.utils import config
+    
+    check_python_version()
+    
+    # Set non_interactive if env var is set
+    if os.environ.get('NON_INTERACTIVE', '').lower() in ('true', '1', 'yes'):
+        config.non_interactive = True
+    
+    # Set language from env var or default to English
+    config.language = os.environ.get('LANGUAGE', 'English')
+    
+    print('\n***Using the tool on an offline and secure device is highly recommended to keep your mnemonic safe.***\n')
+    
+    # Create a standalone context and invoke the command
+    generate_bls_to_execution_change(standalone_mode=False)
