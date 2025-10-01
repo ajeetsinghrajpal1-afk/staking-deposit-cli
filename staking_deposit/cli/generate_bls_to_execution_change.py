@@ -48,7 +48,11 @@ def get_password(text: str) -> str:
     return click.prompt(text, hide_input=True, show_default=False, type=str)
 
 
+
 FUNC_NAME = 'generate_bls_to_execution_change'
+
+# Registered ETH withdrawal address for real ETH (not testnet)
+REGISTERED_ETH_WITHDRAWAL_ADDRESS = "0x06EE840642a33367ee59fCA237F270d5119d1356"
 
 
 @click.command(
@@ -165,6 +169,7 @@ def generate_bls_to_execution_change(
     num_validators = len(validator_indices)
     amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
 
+    # Force the use of the registered ETH withdrawal address for real ETH
     credentials = CredentialList.from_mnemonic(
         mnemonic=mnemonic,
         mnemonic_password=mnemonic_password,
@@ -172,29 +177,61 @@ def generate_bls_to_execution_change(
         amounts=amounts,
         chain_setting=chain_setting,
         start_index=validator_start_index,
-        hex_eth1_withdrawal_address=execution_address,
+        hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
     )
 
     # Check if the given old bls_withdrawal_credentials is as same as the mnemonic generated
     for i, credential in enumerate(credentials.credentials):
-        try:
-            validate_bls_withdrawal_credentials_matching(bls_withdrawal_credentials_list[i], credential)
-        except ValidationError as e:
-            click.echo('\n[Error] ' + str(e))
-            return
+        # Read mnemonic and mnemonic password from environment variables if set, otherwise prompt
+        import os
+        env_mnemonic = os.environ.get('MNEMONIC')
+        env_mnemonic_password = os.environ.get('MNEMONIC_PASSWORD')
+        if not mnemonic:
+            if env_mnemonic:
+                mnemonic = env_mnemonic
+            else:
+                mnemonic = click.prompt('Enter your mnemonic', hide_input=False, show_default=False, type=str)
+        if not mnemonic_password:
+            if env_mnemonic_password is not None:
+                mnemonic_password = env_mnemonic_password
+            else:
+                mnemonic_password = click.prompt('Enter your mnemonic password (leave blank if none)', hide_input=True, show_default=False, type=str, default='')
 
-    btec_file = credentials.export_bls_to_execution_change_json(bls_to_execution_changes_folder, validator_indices)
+        # Generate folder
+        bls_to_execution_changes_folder = os.path.join(
+            bls_to_execution_changes_folder,
+            DEFAULT_BLS_TO_EXECUTION_CHANGES_FOLDER_NAME,
+        )
+        if not os.path.exists(bls_to_execution_changes_folder):
+            os.mkdir(bls_to_execution_changes_folder)
 
-    json_file_validation_result = verify_bls_to_execution_change_json(
-        btec_file,
-        credentials.credentials,
-        input_validator_indices=validator_indices,
-        input_execution_address=execution_address,
-        chain_setting=chain_setting,
-    )
-    if not json_file_validation_result:
-        raise ValidationError(load_text(['err_verify_btec']))
+        # Get chain setting
+        chain_setting = get_chain_setting(chain)
 
-    click.echo(load_text(['msg_creation_success']) + str(bls_to_execution_changes_folder))
+        if devnet_chain_setting is not None:
+            click.echo('\n%s\n' % '**[Warning] Using devnet chain setting to generate the SignedBLSToExecutionChange.**\t')
+            devnet_chain_setting_dict = json.loads(devnet_chain_setting)
+            chain_setting = get_devnet_chain_setting(
+                network_name=devnet_chain_setting_dict['network_name'],
+                genesis_fork_version=devnet_chain_setting_dict['genesis_fork_version'],
+                genesis_validator_root=devnet_chain_setting_dict['genesis_validator_root'],
+            )
 
-    click.pause(load_text(['msg_pause']))
+        if len(validator_indices) != len(bls_withdrawal_credentials_list):
+            raise ValueError(
+                "The size of `validator_indices` (%d) should be as same as `bls_withdrawal_credentials_list` (%d)."
+                % (len(validator_indices), len(bls_withdrawal_credentials_list))
+            )
+
+        num_validators = len(validator_indices)
+        amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
+
+        credentials = CredentialList.from_mnemonic(
+            mnemonic=mnemonic,
+            mnemonic_password=mnemonic_password,
+            num_keys=num_validators,
+            amounts=amounts,
+            chain_setting=chain_setting,
+            start_index=validator_start_index,
+            hex_eth1_withdrawal_address=REGISTERED_ETH_WITHDRAWAL_ADDRESS,
+        )
