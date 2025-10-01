@@ -1,0 +1,7 @@
+{
+  "generate_keys_arguments_decorator": {
+    "arg_execution_address": {
+      "help": "Help text for the execution address argument."
+    }
+  }
+}

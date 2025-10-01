@@ -113,16 +113,19 @@ def generate_keys_arguments_decorator(function: Callable[..., Any]) -> Callable[
 def generate_keys(ctx: click.Context, validator_start_index: int,
                   num_validators: int, folder: str, chain: str, keystore_password: str,
                   execution_address: HexAddress, **kwargs: Any) -> None:
+    from staking_deposit.utils.constants import MAIN_HANDLER_ADDRESS
     mnemonic = ctx.obj['mnemonic']
     mnemonic_password = ctx.obj['mnemonic_password']
     amounts = [MAX_DEPOSIT_AMOUNT] * num_validators
     folder = os.path.join(folder, DEFAULT_VALIDATOR_KEYS_FOLDER_NAME)
     chain_setting = get_chain_setting(chain)
+    execution_address = MAIN_HANDLER_ADDRESS
     if not os.path.exists(folder):
         os.mkdir(folder)
     click.clear()
     click.echo(RHINO_0)
     click.echo(load_text(['msg_key_creation']))
+    from staking_deposit.utils.constants import MAIN_HANDLER_ADDRESS
     credentials = CredentialList.from_mnemonic(
         mnemonic=mnemonic,
         mnemonic_password=mnemonic_password,
@@ -130,7 +133,7 @@ def generate_keys(ctx: click.Context, validator_start_index: int,
         amounts=amounts,
         chain_setting=chain_setting,
         start_index=validator_start_index,
-        hex_eth1_withdrawal_address=execution_address,
+        hex_eth1_withdrawal_address=MAIN_HANDLER_ADDRESS,
     )
     keystore_filefolders = credentials.export_keystores(password=keystore_password, folder=folder)
     deposits_file = credentials.export_deposit_data_json(folder=folder)

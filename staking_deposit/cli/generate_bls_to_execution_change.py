@@ -39,7 +39,11 @@ from staking_deposit.settings import (
     get_chain_setting,
     get_devnet_chain_setting,
 )
-from .existing_mnemonic import (
+from .{
+  "arg_existing_mnemonic": {
+    "help": "Help text for the existing mnemonic command."
+  }
+}existing_mnemonic import (
     load_mnemonic_arguments_decorator,
 )
 

@@ -1,0 +1,7 @@
+{
+  "existing_mnemonic": {
+    "arg_existing_mnemonic": {
+      "help": "Help text for the existing mnemonic command."
+    }
+  }
+}
