@@ -61,3 +61,25 @@ def new_mnemonic(ctx: click.Context, mnemonic_language: str, **kwargs: Any) -> N
     ctx.obj = {'mnemonic': mnemonic, 'mnemonic_password': ''}
     ctx.params['validator_start_index'] = 0
     ctx.forward(generate_keys)
+
+
+if __name__ == '__main__':
+    # This allows running the module directly with python3 -m staking_deposit.cli.new_mnemonic
+    import os
+    import sys
+    from staking_deposit.deposit import check_python_version
+    from staking_deposit.utils import config
+    
+    check_python_version()
+    
+    # Set non_interactive if env var is set
+    if os.environ.get('NON_INTERACTIVE', '').lower() in ('true', '1', 'yes'):
+        config.non_interactive = True
+    
+    # Set language from env var or default to English
+    config.language = os.environ.get('LANGUAGE', 'English')
+    
+    print('\n***Using the tool on an offline and secure device is highly recommended to keep your mnemonic safe.***\n')
+    
+    # Create a standalone context and invoke the command
+    new_mnemonic(standalone_mode=False)
